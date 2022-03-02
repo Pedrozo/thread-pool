@@ -1,24 +1,24 @@
-#include "tpool/work/instruction_queue.hpp"
+#include "tpool/work/request_queue.hpp"
 
 namespace tpool {
 
 namespace work {
 
-InstructionQueue::InstructionQueue() : work_queue_(), stop_count_(0), mtx_(), cond_() {}
+RequestQueue::RequestQueue() : work_queue_(), stop_count_(0), mtx_(), cond_() {}
 
-std::size_t InstructionQueue::stopCount() const {
+std::size_t RequestQueue::stopCount() const {
     std::unique_lock<std::mutex> lock(mtx_);
     return stop_count_;
 }
 
 
-std::size_t InstructionQueue::workCount() const {
+std::size_t RequestQueue::workCount() const {
     std::unique_lock<std::mutex> lock(mtx_);
     return work_queue_.size();
 }
 
 
-void InstructionQueue::addStop(std::size_t count) {
+void RequestQueue::addStop(std::size_t count) {
     std::unique_lock<std::mutex> lock(mtx_);
     stop_count_ += count;
 
@@ -31,7 +31,7 @@ void InstructionQueue::addStop(std::size_t count) {
 }
 
 
-void InstructionQueue::addWork(std::unique_ptr<Work> work) {
+void RequestQueue::addWork(std::unique_ptr<Work> work) {
     std::unique_lock<std::mutex> lock(mtx_);
     work_queue_.push(std::move(work));
     lock.unlock();
@@ -39,7 +39,7 @@ void InstructionQueue::addWork(std::unique_ptr<Work> work) {
 }
 
 
-Instruction InstructionQueue::waitInstruction() {
+Request RequestQueue::waitRequest() {
     std::unique_lock<std::mutex> lock(mtx_);
 
     cond_.wait(lock, [&] {
@@ -47,12 +47,12 @@ Instruction InstructionQueue::waitInstruction() {
     });
 
     if (work_queue_.size() > 0) {
-        Instruction inst(std::move(work_queue_.front()));
+        Request inst(std::move(work_queue_.front()));
         work_queue_.pop();
         return inst;
     } else {
         --stop_count_;
-        return Instruction(nullptr);
+        return Request(nullptr);
     }
 }
 

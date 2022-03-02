@@ -1,5 +1,5 @@
-#ifndef TPOOL_WORK_INSTRUCTION_QUEUE_HPP_
-#define TPOOL_WORK_INSTRUCTION_QUEUE_HPP_
+#ifndef TPOOL_WORK_REQUEST_QUEUE_HPP_
+#define TPOOL_WORK_REQUEST_QUEUE_HPP_
 
 #include <queue>
 #include <memory>
@@ -7,25 +7,24 @@
 #include <condition_variable>
 
 #include "tpool/work/work.hpp"
-#include "tpool/work/instruction.hpp"
+#include "tpool/work/request.hpp"
 
 namespace tpool {
 
 namespace work {
 
-class InstructionQueue {
+class RequestQueue {
 public:
 
-    // TODO: factory for "work" and "stop" instructions
-    InstructionQueue();
+    RequestQueue();
 
-    InstructionQueue(const InstructionQueue&) = delete;
+    RequestQueue(const RequestQueue&) = delete;
 
-    InstructionQueue(InstructionQueue&&) = default;
+    RequestQueue(RequestQueue&&) = default;
 
-    InstructionQueue& operator=(const InstructionQueue&) = delete;
+    RequestQueue& operator=(const RequestQueue&) = delete;
 
-    InstructionQueue& operator=(InstructionQueue&&) = default;
+    RequestQueue& operator=(RequestQueue&&) = default;
 
     std::size_t stopCount() const;
 
@@ -35,7 +34,7 @@ public:
 
     void addWork(std::unique_ptr<Work> work);
 
-    Instruction waitInstruction();
+    Request waitRequest();
 
 private:
     std::queue<std::unique_ptr<Work>> work_queue_;
@@ -49,4 +48,4 @@ private:
 
 } // namespace tpool
 
-#endif // TPOOL_WORK_INSTRUCTION_QUEUE_HPP_
+#endif // TPOOL_WORK_REQUEST_QUEUE_HPP_

@@ -8,8 +8,8 @@
 
 #include "tpool/work/work.hpp"
 #include "tpool/work/worker.hpp"
-#include "tpool/work/instruction.hpp"
-#include "tpool/work/instruction_queue.hpp"
+#include "tpool/work/request.hpp"
+#include "tpool/work/request_queue.hpp"
 
 namespace tpool {
 
@@ -24,12 +24,12 @@ public:
 
 	void fire(unsigned int count);
 
-	void pushWork(std::unique_ptr<Work> work); // TODO: better name
+	void delegate(std::unique_ptr<Work> work);
 
 	std::size_t workerCount() const;
 
 private:
-	InstructionQueue instruction_queue_;
+	RequestQueue request_queue_;
 	std::vector<std::unique_ptr<Worker>> workers_; // TODO: use correct data structure
 	mutable std::mutex mtx_;
 	std::condition_variable cond_;

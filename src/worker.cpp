@@ -6,8 +6,8 @@ namespace tpool {
 
 namespace work {
 
-Worker::Worker(InstructionQueue& instruction_queue)
-    : state_(State::STOPPED), thr_(), instruction_queue_(instruction_queue) {}
+Worker::Worker(RequestQueue& request_queue)
+    : state_(State::STOPPED), thr_(), request_queue_(request_queue) {}
 
 
 Worker::~Worker() {
@@ -41,15 +41,15 @@ void Worker::loop() {
         state_ = Worker::State::WAITING;
 
         lock.unlock();
-        Instruction inst = instruction_queue_.waitInstruction();
+        Request request = request_queue_.waitRequest();
         lock.lock();
 
-        if (inst.isStop())
+        if (request.shouldStop())
             break;
 
         state_ = Worker::State::WORKING;
         lock.unlock();
-        inst.work()();
+        request.getWork()();
         lock.lock();
     }
 

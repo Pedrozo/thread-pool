@@ -6,7 +6,7 @@ namespace work {
 
 Manager::~Manager() {
     std::unique_lock<std::mutex> lock(mtx_);
-	instruction_queue_.addStop(workers_.size());
+	request_queue_.addStop(workers_.size());
 }
 
 
@@ -25,7 +25,7 @@ void Manager::hire(unsigned int count) {
     }
 
     while (count--) {
-        std::unique_ptr<Worker> worker = std::make_unique<Worker>(instruction_queue_);
+        std::unique_ptr<Worker> worker = std::make_unique<Worker>(request_queue_);
         worker->start();
         workers_.push_back(std::move(worker));
     }
@@ -34,13 +34,13 @@ void Manager::hire(unsigned int count) {
 
 void Manager::fire(unsigned int count) {
     std::unique_lock<std::mutex> lock(mtx_);
-    instruction_queue_.addStop(count);
+    request_queue_.addStop(count);
 }
 
 
-void Manager::pushWork(std::unique_ptr<Work> work) {
+void Manager::delegate(std::unique_ptr<Work> work) {
     std::unique_lock<std::mutex> lock(mtx_);
-    instruction_queue_.addWork(std::move(work));
+    request_queue_.addWork(std::move(work));
 }
 
 

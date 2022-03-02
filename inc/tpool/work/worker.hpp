@@ -5,7 +5,7 @@
 #include <memory>
 #include <mutex>
 
-#include "tpool/work/instruction_queue.hpp"
+#include "tpool/work/request_queue.hpp"
 
 namespace tpool {
 
@@ -20,7 +20,7 @@ public:
         WORKING
     };
 
-    explicit Worker(InstructionQueue& instruction_queue);
+    explicit Worker(RequestQueue& request_queue);
 
     Worker(const Worker&) = delete;
 
@@ -41,7 +41,7 @@ private:
 
     State state_; // TODO: check data-race
     std::thread thr_;
-    InstructionQueue& instruction_queue_;
+    RequestQueue& request_queue_;
     mutable std::mutex mtx_;
     std::condition_variable cond_;
 };
