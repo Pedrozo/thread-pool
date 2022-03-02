@@ -1,5 +1,7 @@
 #include "tpool/work/worker.hpp"
 
+#include <iostream>
+
 namespace tpool {
 
 namespace work {
@@ -9,10 +11,8 @@ Worker::Worker(InstructionQueue& instruction_queue)
 
 
 Worker::~Worker() {
-    std::unique_lock<std::mutex> lock(mtx_);
-
+    // TODO: check race condition
     if (thr_.joinable()) {
-        lock.unlock();
         thr_.join();
     }
 }
@@ -28,7 +28,7 @@ void Worker::start() {
     std::unique_lock<std::mutex> lock(mtx_);
 
     if (state_ != Worker::State::STOPPED)
-        throw "...";
+        throw "..."; // TODO: proper exception
 
     thr_ = std::thread(&Worker::loop, this);
 }

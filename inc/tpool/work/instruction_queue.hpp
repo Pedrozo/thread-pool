@@ -16,8 +16,16 @@ namespace work {
 class InstructionQueue {
 public:
 
-    // TODO: factory for work() and stop()
+    // TODO: factory for "work" and "stop" instructions
     InstructionQueue();
+
+    InstructionQueue(const InstructionQueue&) = delete;
+
+    InstructionQueue(InstructionQueue&&) = default;
+
+    InstructionQueue& operator=(const InstructionQueue&) = delete;
+
+    InstructionQueue& operator=(InstructionQueue&&) = default;
 
     std::size_t stopCount() const;
 
@@ -34,6 +42,7 @@ private:
     std::size_t stop_count_;
     mutable std::mutex mtx_;
     std::condition_variable cond_;
+    int some_value = 0;
 };
 
 } // namespace work

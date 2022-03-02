@@ -39,7 +39,7 @@ public:
 private:
     void loop();
 
-    State state_; // TODO: has data-race
+    State state_; // TODO: check data-race
     std::thread thr_;
     InstructionQueue& instruction_queue_;
     mutable std::mutex mtx_;

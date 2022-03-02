@@ -6,7 +6,6 @@ namespace work {
 
 InstructionQueue::InstructionQueue() : work_queue_(), stop_count_(0), mtx_(), cond_() {}
 
-
 std::size_t InstructionQueue::stopCount() const {
     std::unique_lock<std::mutex> lock(mtx_);
     return stop_count_;
@@ -22,8 +21,13 @@ std::size_t InstructionQueue::workCount() const {
 void InstructionQueue::addStop(std::size_t count) {
     std::unique_lock<std::mutex> lock(mtx_);
     stop_count_ += count;
+
     lock.unlock();
-    cond_.notify_all();
+
+    if (count > 1)
+        cond_.notify_all();
+    else
+        cond_.notify_one();
 }
 
 
@@ -39,10 +43,10 @@ Instruction InstructionQueue::waitInstruction() {
     std::unique_lock<std::mutex> lock(mtx_);
 
     cond_.wait(lock, [&] {
-        return stop_count_ > 0 || !work_queue_.empty();
+        return stop_count_ > 0 || work_queue_.size() > 0;
     });
 
-    if (!work_queue_.empty()) {
+    if (work_queue_.size() > 0) {
         Instruction inst(std::move(work_queue_.front()));
         work_queue_.pop();
         return inst;
