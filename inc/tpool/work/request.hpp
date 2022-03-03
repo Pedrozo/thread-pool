@@ -12,21 +12,21 @@ namespace work {
 class Request {
 public:
 
-    explicit Request(std::unique_ptr<Work> work) : work_(std::move(work)) {}
+    explicit Request(std::unique_ptr<Work> work) noexcept : work_(std::move(work)) {}
 
     Request(const Request&) = delete;
 
-    Request(Request&&) = default;
+    Request(Request&&) noexcept = default;
 
     Request& operator=(const Request&) = delete;
 
-    Request& operator=(Request&&) = default;
+    Request& operator=(Request&&) noexcept = default;
 
-    bool shouldStop() const {
+    bool shouldStop() const noexcept {
         return work_ == nullptr;
     }
 
-    bool shouldWork() const {
+    bool shouldWork() const noexcept {
         return work_ != nullptr;
     }
 

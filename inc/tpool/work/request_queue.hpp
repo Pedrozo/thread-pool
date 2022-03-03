@@ -20,11 +20,11 @@ public:
 
     RequestQueue(const RequestQueue&) = delete;
 
-    RequestQueue(RequestQueue&&) = default;
+    RequestQueue(RequestQueue&&) noexcept = default;
 
     RequestQueue& operator=(const RequestQueue&) = delete;
 
-    RequestQueue& operator=(RequestQueue&&) = default;
+    RequestQueue& operator=(RequestQueue&&) noexcept = default;
 
     std::size_t stopCount() const;
 
