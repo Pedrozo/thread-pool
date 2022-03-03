@@ -47,12 +47,12 @@ Request RequestQueue::waitRequest() {
     });
 
     if (work_queue_.size() > 0) {
-        Request inst(std::move(work_queue_.front()));
+        Request request = makeWorkRequest(std::move(work_queue_.front()));
         work_queue_.pop();
-        return inst;
+        return request;
     } else {
         --stop_count_;
-        return Request(nullptr);
+        return makeStopRequest();
     }
 }
 

@@ -11,7 +11,6 @@ Worker::Worker(RequestQueue& request_queue)
 
 
 Worker::~Worker() {
-    // TODO: check race condition
     if (thr_.joinable()) {
         thr_.join();
     }
@@ -28,7 +27,7 @@ void Worker::start() {
     std::unique_lock<std::mutex> lock(mtx_);
 
     if (state_ != Worker::State::STOPPED)
-        throw "..."; // TODO: proper exception
+        throw "worker already started";
 
     thr_ = std::thread(&Worker::loop, this);
 }

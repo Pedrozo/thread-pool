@@ -38,6 +38,14 @@ private:
     std::unique_ptr<Work> work_;
 };
 
+inline Request makeStopRequest() {
+    return Request(nullptr);
+}
+
+inline Request makeWorkRequest(std::unique_ptr<Work> work) {
+    return Request(std::move(work));
+}
+
 } // namespace work
 
 } // namespace tpool

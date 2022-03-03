@@ -2,7 +2,7 @@
 #define TPOOL_WORK_MANAGER_HPP_
 
 #include <memory>
-#include <vector>
+#include <list>
 #include <mutex>
 #include <condition_variable>
 
@@ -30,7 +30,7 @@ public:
 
 private:
 	RequestQueue request_queue_;
-	std::vector<std::unique_ptr<Worker>> workers_; // TODO: use correct data structure
+	std::list<std::unique_ptr<Worker>> workers_;
 	mutable std::mutex mtx_;
 	std::condition_variable cond_;
 };
