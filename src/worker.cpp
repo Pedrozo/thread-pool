@@ -80,19 +80,13 @@ void Worker::loop() {
 
     while (!stop_) {
         state_ = Worker::State::WAITING;
-        // std::unique_ptr<work::Work> work = nullptr;
         std::optional<Work> work; // TODO: test performance when it is outside the loop
 
         cond_.wait(lock, [&] {
-            // if (next_work_ != nullptr) {
-            //     work = std::move(next_work_);
-            //     return true;
-            // }
-
             if (stop_)
                 return true;
 
-            work = shared_queue_.popIfExists();
+            work = shared_queue_.poll();
             return bool(work);
         });
 

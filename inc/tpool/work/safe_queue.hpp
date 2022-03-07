@@ -20,26 +20,36 @@ public:
         return queue_.size();
     }
 
-    void push(T elem) {
+    void offer(T elem) {
         std::unique_lock<std::mutex> lock(mtx_);
         queue_.push(std::move(elem));
     }
 
-    std::optional<T> popIfExists() {
+    std::optional<T> peek() {
         std::unique_lock<std::mutex> lock(mtx_);
+        return next();
+    }
 
+    std::optional<T> poll() {
+        std::unique_lock<std::mutex> lock(mtx_);
+        auto elem = next();
+
+        if (elem)
+            queue_.pop();
+        
+        return elem;
+    }
+
+private:
+    std::optional<T> next() {
         if (queue_.empty())
             return std::nullopt;
         
         T elem = std::move(queue_.front());
-        queue_.pop();
 
         return std::optional<T>(std::move(elem));
-
-        // return { elem }; // this will copy?
     }
 
-private:
     std::queue<T> queue_;
     mutable std::mutex mtx_;
 };
@@ -48,4 +58,4 @@ private:
 
 }
 
-#endif // TPOOL_WORK2_SAFE_QUEUE_HPP_
+#endif // TPOOL_WORK_SAFE_QUEUE_HPP_

@@ -39,7 +39,7 @@ void Manager::fire(unsigned int count) {
 void Manager::delegate(Work work) {
     std::unique_lock<std::mutex> lock(mtx_);
 
-    work_queue_.push(std::move(work));
+    work_queue_.offer(std::move(work));
 
     for (auto& worker : workers_)
         if (worker->notify())
