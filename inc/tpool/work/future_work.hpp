@@ -13,8 +13,9 @@ namespace work {
 
 // TODO: template definition like packaged_task
 template<typename Ret, typename... Args>
-class FutureWork : public Work {
+class FutureWork {
 public:
+
     template<typename Func>
     FutureWork(Func&& func, Args... args)
         : task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...) {}
@@ -31,7 +32,7 @@ public:
         return task_.get_future();
     }
 
-    void operator()() override {
+    void operator()() {
         std::apply(task_, args_); // C++ 17 (https://en.cppreference.com/w/cpp/utility/apply) TODO: make it C++ 14 (or 11)
     }
 

@@ -1,11 +1,13 @@
-#ifndef TPOOL_WORK_WORKER_HPP_
-#define TPOOL_WORK_WORKER_HPP_
+#ifndef TPOOL_WORK2_WORKER_HPP_
+#define TPOOL_WORK2_WORKER_HPP_
 
 #include <thread>
 #include <memory>
 #include <mutex>
+#include <condition_variable>
 
-#include "tpool/work/request_queue.hpp"
+#include "tpool/work/work.hpp"
+#include "tpool/work/safe_queue.hpp"
 
 namespace tpool {
 
@@ -16,11 +18,12 @@ public:
 
     enum class State {
         STOPPED,
+        INITIALIZING,
         WAITING,
         WORKING
     };
 
-    explicit Worker(RequestQueue& request_queue);
+    explicit Worker(SafeQueue<Work>& shared_queue);
 
     Worker(const Worker&) = delete;
 
@@ -34,17 +37,24 @@ public:
 
     State state() const;
 
+    // void doWork(Work work); // removed for now
+
     void start();
+
+    void stop();
 
     void awaitStop();
 
+    bool notify();
+
 private:
+
     void loop();
 
-    State state_; // TODO: check data-race
+    State state_;
     std::thread thr_;
-    RequestQueue& request_queue_;
-    bool force_stop_;
+    bool stop_;
+    SafeQueue<Work>& shared_queue_;
     mutable std::mutex mtx_;
     std::condition_variable cond_;
 };

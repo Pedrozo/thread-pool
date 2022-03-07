@@ -1,5 +1,5 @@
-#ifndef TPOOL_WORK2_SAFE_QUEUE_HPP_
-#define TPOOL_WORK2_SAFE_QUEUE_HPP_
+#ifndef TPOOL_WORK_SAFE_QUEUE_HPP_
+#define TPOOL_WORK_SAFE_QUEUE_HPP_
 
 #include <queue>
 #include <optional>
@@ -7,7 +7,7 @@
 
 namespace tpool {
 
-namespace work2 {
+namespace work {
 
 template<typename T>
 class SafeQueue {

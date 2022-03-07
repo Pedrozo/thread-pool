@@ -21,7 +21,21 @@ std::pair<std::unique_ptr<work::Work>, std::future<Ret>> make_work(Func&& func, 
     return std::make_pair(std::make_unique<work::FutureWork<Ret, Args...>>(std::move(fwork)), std::move(f));
 }
 
+void test(work::Work f) {
+    std::cout << "running..." << std::endl;
+    f();
+    std::cout << "finish" << std::endl;
+}
+
+void hello() {
+    std::cout << "hello" << std::endl;
+}
+
 int main() {
+    // work::FutureWork<void> work(hello);
+    // test(work);
+    // test(hello);
+
     FixedPool pool(16);
     constexpr int SIZE = static_cast<int>(1e6);
     std::vector<std::future<double>> results;
