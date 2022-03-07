@@ -1,19 +1,16 @@
 #include "tpool/work/worker.hpp"
 
-#include <iostream>
-
 namespace tpool {
 
 namespace work {
 
 Worker::Worker(RequestQueue& request_queue)
-    : state_(State::STOPPED), thr_(), request_queue_(request_queue) {}
+    : state_(State::STOPPED), thr_(), request_queue_(request_queue), 
+      force_stop_(false), mtx_(), cond_() {}
 
 
 Worker::~Worker() {
-    if (thr_.joinable()) {
-        thr_.join();
-    }
+    awaitStop();
 }
 
 
@@ -30,6 +27,12 @@ void Worker::start() {
         throw "worker already started";
 
     thr_ = std::thread(&Worker::loop, this);
+}
+
+
+void Worker::awaitStop() {
+    if (thr_.joinable())
+        thr_.join();
 }
 
 

@@ -4,6 +4,8 @@
 #include <future>
 
 #include "tpool/work/manager.hpp"
+#include "tpool/work2/manager.hpp"
+#include "tpool/work/future_work.hpp"
 
 namespace tpool {
 
@@ -32,7 +34,7 @@ public:
 private:
     std::size_t size_;
     State state_;
-    work::Manager manager_;
+    work2::Manager manager_;
 };
 
 } // namespace tpool

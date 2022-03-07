@@ -18,6 +18,14 @@ namespace work {
 class Manager {
 public:
 	
+	enum class State {
+		STOPPED,
+		REFUSING,
+		ACCEPTING
+	};
+
+	Manager();
+
 	~Manager();
 
 	void hire(unsigned int count);
@@ -26,11 +34,14 @@ public:
 
 	void delegate(std::unique_ptr<Work> work);
 
+	void stopAll();
+
 	std::size_t workerCount() const;
 
 private:
 	RequestQueue request_queue_;
 	std::list<std::unique_ptr<Worker>> workers_;
+	State state_;
 	mutable std::mutex mtx_;
 	std::condition_variable cond_;
 };

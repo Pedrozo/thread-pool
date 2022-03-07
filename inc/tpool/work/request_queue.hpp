@@ -30,18 +30,24 @@ public:
 
     std::size_t workCount() const;
 
+    std::size_t size() const;
+
+    void resetStopCount();
+
     void addStop(std::size_t count);
 
     void addWork(std::unique_ptr<Work> work);
 
     Request waitRequest();
 
+    void setToAlwaysStop(bool always_stop);
+
 private:
     std::queue<std::unique_ptr<Work>> work_queue_;
     std::size_t stop_count_;
+    bool always_stop_;
     mutable std::mutex mtx_;
     std::condition_variable cond_;
-    int some_value = 0;
 };
 
 } // namespace work
