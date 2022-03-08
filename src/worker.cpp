@@ -1,12 +1,13 @@
 #include "tpool/work/worker.hpp"
+#include <iostream>
 
 namespace tpool {
 
 namespace work {
 
-Worker::Worker(SafeQueue<Work>& shared_queue)
-    : state_(Worker::State::STOPPED), thr_(), stop_(false), 
-      shared_queue_(shared_queue), mtx_(), cond_() {}
+Worker::Worker(SafeQueue<Work>& shared_queue, BoundedCounter<int>& stop_counter)
+    : state_(Worker::State::STOPPED), thr_(), stop_(false), next_work_(),
+      shared_queue_(shared_queue), stop_counter_(stop_counter), mtx_(), cond_() {}
 
 
 Worker::~Worker() {
@@ -28,14 +29,20 @@ Worker::State Worker::state() const {
 }
 
 
-// void Worker::doWork(std::unique_ptr<work::Work> work) {
-//     std::unique_lock<std::mutex> lock(mtx_);
+void Worker::doWork(Work work) {
+    std::unique_lock<std::mutex> lock(mtx_);
 
-//     if (next_work_)
-//         throw "worker already has work to do";
+    if (next_work_)
+        throw "worker already has work to do";
 
-//     next_work_ = std::move(work);
-// }
+    next_work_ = std::optional<Work>(std::move(work));
+
+    if (state_ == Worker::State::WAITING) {
+        state_ = Worker::State::NOTIFIED;
+        lock.unlock();
+        cond_.notify_one();
+    }
+}
 
 
 void Worker::start() {
@@ -57,8 +64,12 @@ void Worker::stop() {
         throw "worker is already stopped";
 
     stop_ = true;
-    lock.unlock();
-    cond_.notify_one();
+
+    if (state_ == Worker::State::WAITING) {
+        state_ = Worker::State::NOTIFIED;
+        lock.unlock();
+        cond_.notify_one();
+    }
 }
 
 
@@ -70,27 +81,46 @@ void Worker::awaitStop() {
 
 bool Worker::notify() {
     std::unique_lock<std::mutex> lock(mtx_);
-    cond_.notify_one();
-    return state_ == Worker::State::WAITING;
+    
+    if (state_ == Worker::State::WAITING) {
+        state_ = Worker::State::NOTIFIED;
+        lock.unlock();
+        cond_.notify_one();
+        return true;
+    }
+
+    return false;
 }
 
 
 void Worker::loop() {
     std::unique_lock<std::mutex> lock(mtx_);
 
-    while (!stop_) {
+    while (next_work_ || !stop_) {
         state_ = Worker::State::WAITING;
         std::optional<Work> work; // TODO: test performance when it is outside the loop
 
+        std::cout << "waiting" << std::endl;
+
         cond_.wait(lock, [&] {
-            if (stop_)
+            std::cout << "checking" << std::endl;
+
+            if (next_work_) {
+                work = std::move(next_work_);
+                next_work_ = std::nullopt;
                 return true;
+            }
+
+            if (stop_ = (stop_ || --stop_counter_)) {
+                return true;
+            }
 
             work = shared_queue_.poll();
             return bool(work);
         });
 
         if (work) {
+            std::cout << "working" << std::endl;
             state_ = Worker::State::WORKING;
             lock.unlock();
             (*work)();
@@ -98,6 +128,7 @@ void Worker::loop() {
         }
     }
 
+    std::cout << "stopping" << std::endl;
     state_ = Worker::State::STOPPED;
 }
 

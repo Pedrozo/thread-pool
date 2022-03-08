@@ -17,8 +17,6 @@ public:
 
     Manager();
 
-    ~Manager();
-
     void hire(unsigned int count);
 
     void fire(unsigned int count);
@@ -27,6 +25,7 @@ public:
 
 private:
     SafeQueue<Work> work_queue_;
+    BoundedCounter<int> stop_counter_;
     std::list<std::unique_ptr<Worker>> workers_;
     mutable std::mutex mtx_;
     std::condition_variable cond_;

@@ -10,6 +10,8 @@
 // #include "tpool/work2/manager.hpp"
 
 #include "tpool/fixed_pool.hpp"
+#include "tpool/work/safe_queue.hpp"
+#include "tpool/work/worker.hpp"
 
 
 using namespace tpool;
@@ -28,64 +30,24 @@ void test(work::Work f) {
 }
 
 void hello() {
-    std::cout << "hello" << std::endl;
+    std::cout << "started" << std::endl;
+    for (int i = 0; i < 1e9 * 2; i++);
+    std::cout << "finished" << std::endl;
 }
 
 int main() {
-    // work::FutureWork<void> work(hello);
-    // test(work);
-    // test(hello);
+    work::Manager manager;
 
-    FixedPool pool(16);
-    constexpr int SIZE = static_cast<int>(1e6);
-    std::vector<std::future<double>> results;
-    double sum = 0.;
+    manager.hire(4);
 
-    for (int i = 0; i < SIZE; i++)
-        results.push_back(pool.submit(sqrt, static_cast<double>(i)));
+    for (int i = 0; i < 1e9; i++);
+    std::cout << "------------------------" << std::endl;
 
-    for (auto& r : results)
-        sum += r.get();
+    manager.delegate(hello);
+    manager.fire(2);
 
-    std::cout << sum << std::endl;
-
-    // std::future<double> f = pool.submit(sqrt, 4.);
-
-    // std::cout << f.get() << std::endl;
-
-    /*
-    work2::SafeQueue<std::unique_ptr<work::Work>> safe_queue;
-    work2::Worker worker(safe_queue);
-    std::vector<std::future<double>> results;
-    double sum = 0.;
-
-    constexpr int SIZE = static_cast<int>(1e5);
-
-    for (int i = 0; i < SIZE; i++) {
-        auto work = make_work(sqrt, static_cast<double>(i));
-        safe_queue.push(std::move(work.first));
-        results.push_back(std::move(work.second));
-    }
-
-    worker.start();
-
-    auto other = make_work(sqrt, 144.);
-    worker.doWork(std::move(other.first));
-
-    std::cout << other.second.get() << std::endl;
-
-    for (auto& result : results) {
-        sum += result.get();
-    }
-
-    std::cout << sum << std::endl;
-    */
-
-    // auto work = make_work(sum, 1, 2);
-
-    // worker.doWork(std::move(work.first));
-
-    // std::cout << work.second.get() << std::endl;
+    std::cout << "------------------------" << std::endl;
+    for (int i = 0; i < 1e9; i++);
 
     return 0;
 }
