@@ -60,7 +60,8 @@ private:
 
         template<typename Func>
         Impl(util::SafeQueue<Work>& work_queue, Func&& func, Args... args)
-            : completed_(false), task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...), task_future_(task_.get_future()), work_queue_(work_queue), shared_impl_(nullptr) {}
+            : completed_(false), task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...),
+              task_future_(task_.get_future()), work_queue_(work_queue), shared_impl_(nullptr) {}
 
         std::future<Ret> getFuture() {
             return std::async(std::launch::deferred, &Impl::lazy, this, *shared_impl_);

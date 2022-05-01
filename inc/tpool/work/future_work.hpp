@@ -50,7 +50,7 @@ public:
      * result in the associated std::future objects.
      */
     void operator()() {
-        std::apply(task_, args_); // C++ 17 (https://en.cppreference.com/w/cpp/utility/apply) TODO: make it C++ 14 (or 11)
+        std::apply(task_, args_); // C++ 17 (https://en.cppreference.com/w/cpp/utility/apply) TODO: make it C++ 14
     }
 
 private:

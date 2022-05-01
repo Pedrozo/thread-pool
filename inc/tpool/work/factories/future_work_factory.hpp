@@ -12,7 +12,6 @@ namespace work {
 
 namespace factories {
 
-
 /**
  * Factory of FutureWork objects
  */

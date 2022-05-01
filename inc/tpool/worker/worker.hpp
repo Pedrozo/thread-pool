@@ -87,7 +87,8 @@ public:
     void awaitStop();
 
     /**
-     * Notifies this worker to check if a new work (from a shared work queue, or directly by doWork()) is available to be performed.
+     * Notifies this worker to check if a new work (from a shared work queue, or directly by doWork())
+     * is available to be performed.
      *
      * @retun true if the notification has changed the worker state from WAITING to NOTIFIED
      */

@@ -73,7 +73,8 @@ public:
         std::unique_lock<std::mutex> lock(mtx_);
 
         if (workers_.size() < max_size_) {
-            auto worker = std::make_unique<worker::Worker>(static_cast<unsigned int>(workers_.size()), *work_queue_, stop_counter_);
+            auto worker = std::make_unique<worker::Worker>(static_cast<unsigned int>(workers_.size()),
+                                                           *work_queue_, stop_counter_);
             worker->start();
 
             workers_.push_back(std::move(worker));
