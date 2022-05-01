@@ -1,12 +1,11 @@
-#include "tpool/work/worker.hpp"
-#include <iostream>
+#include "tpool/worker/worker.hpp"
 
 namespace tpool {
 
-namespace work {
+namespace worker {
 
-Worker::Worker(SafeQueue<Work>& shared_queue, BoundedCounter<int>& stop_counter)
-    : state_(Worker::State::STOPPED), thr_(), stop_(false), next_work_(),
+Worker::Worker(unsigned int id, util::SafeQueue<work::Work>& shared_queue, util::BoundedCounter<int>& stop_counter)
+    : id_(id), state_(Worker::State::STOPPED), thr_(), stop_(false), next_work_(),
       shared_queue_(shared_queue), stop_counter_(stop_counter), mtx_(), cond_() {}
 
 
@@ -29,13 +28,13 @@ Worker::State Worker::state() const {
 }
 
 
-void Worker::doWork(Work work) {
+void Worker::doWork(work::Work work) {
     std::unique_lock<std::mutex> lock(mtx_);
 
     if (next_work_)
         throw "worker already has work to do";
 
-    next_work_ = std::optional<Work>(std::move(work));
+    next_work_ = std::optional<work::Work>(std::move(work));
 
     if (state_ == Worker::State::WAITING) {
         state_ = Worker::State::NOTIFIED;
@@ -97,13 +96,10 @@ void Worker::loop() {
     std::unique_lock<std::mutex> lock(mtx_);
 
     while (next_work_ || !stop_) {
-        state_ = Worker::State::WAITING;
-        std::optional<Work> work; // TODO: test performance when it is outside the loop
-
-        std::cout << "waiting" << std::endl;
+        std::optional<work::Work> work; // TODO: test performance when it is outside the loop
 
         cond_.wait(lock, [&] {
-            std::cout << "checking" << std::endl;
+            state_ = Worker::State::WAITING;
 
             if (next_work_) {
                 work = std::move(next_work_);
@@ -116,11 +112,11 @@ void Worker::loop() {
             }
 
             work = shared_queue_.poll();
+
             return bool(work);
         });
 
         if (work) {
-            std::cout << "working" << std::endl;
             state_ = Worker::State::WORKING;
             lock.unlock();
             (*work)();
@@ -128,10 +124,9 @@ void Worker::loop() {
         }
     }
 
-    std::cout << "stopping" << std::endl;
     state_ = Worker::State::STOPPED;
 }
 
-} // namespace work
+} // namespace worker
 
 } // namespace tpool

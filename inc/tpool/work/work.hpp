@@ -8,12 +8,21 @@ namespace tpool {
 
 namespace work {
 
+/**
+ * An abstraction for any work. It wraps any void() callable to the same polymorphic type.
+ */
 class Work {
 public:
 
+    /**
+     * Constructs a work with the given callable.
+     */
     template<typename T>
     Work(T&& impl) : impl_(std::make_unique<CallableImpl<T>>(std::forward<T>(impl))) {}
 
+    /**
+     * Calls the wrapped callable.
+     */
     void operator()() {
         (*impl_)();
     }

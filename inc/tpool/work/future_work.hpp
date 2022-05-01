@@ -11,11 +11,21 @@ namespace tpool {
 
 namespace work {
 
-// TODO: template definition like packaged_task
+/**
+ * Wraps a callable object along with its arguments. One can invoke this work so it
+ * runs the internal callable with the given arguments, and stores the callable result
+ * (or exception) in std::future objects.
+ */
 template<typename Ret, typename... Args>
 class FutureWork {
 public:
 
+    /**
+     * Constructs a FutureWork.
+     * 
+     * @param func the callable (e.g. function, lambda expression, bind expression, functor)
+     * @param args the arguments to be forwarded to the callable
+     */
     template<typename Func>
     FutureWork(Func&& func, Args... args)
         : task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...) {}
@@ -28,10 +38,17 @@ public:
 
     FutureWork& operator=(FutureWork&&) = default;
 
+    /**
+     * Returns a std::future associated with wrapped callable
+     */
     std::future<Ret> getFuture() {
         return task_.get_future();
     }
 
+    /**
+     * Invokes the callable with its arguments, and stores its 
+     * result in the associated std::future objects.
+     */
     void operator()() {
         std::apply(task_, args_); // C++ 17 (https://en.cppreference.com/w/cpp/utility/apply) TODO: make it C++ 14 (or 11)
     }
