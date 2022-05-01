@@ -8,7 +8,7 @@
 #include "tpool/util/safe_queue.hpp"
 #include "tpool/util/bounded_counter.hpp"
 #include "tpool/work/work.hpp"
-#include "tpool/worker/Worker.hpp"
+#include "tpool/worker/worker.hpp"
 
 namespace tpool {
 
