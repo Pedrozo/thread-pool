@@ -77,7 +77,7 @@ public:
         }
 
         workers_.push_back(std::make_unique<work::Worker>(0, work_queue_, stop_counter_));
- 
+
         return fut;
     }
 

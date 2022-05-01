@@ -80,7 +80,7 @@ void Worker::awaitStop() {
 
 bool Worker::notify() {
     std::unique_lock<std::mutex> lock(mtx_);
-    
+
     if (state_ == Worker::State::WAITING) {
         state_ = Worker::State::NOTIFIED;
         lock.unlock();
@@ -107,7 +107,7 @@ void Worker::loop() {
                 return true;
             }
 
-            if (stop_ = (stop_ || --stop_counter_)) {
+            if ((stop_ = (stop_ || --stop_counter_))) {
                 return true;
             }
 

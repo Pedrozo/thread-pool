@@ -24,76 +24,76 @@ template<typename Ret, typename... Args>
 class StealerWork {
 public:
 
-	/**
-	 * Construts a StealWork
-	 * 
-	 * @param work_queue the work queue to have works stole
-	 * @param func the callable (e.g. function, lambda expression, bind expression, functor)
-	 * @param args the arguments to be forwarded to the callable
-	 */
-	template<typename Func>
-	StealerWork(util::SafeQueue<Work>& work_queue, Func&& func, Args... args)
-		: impl_(std::make_shared<Impl>(work_queue,
-			                           std::forward<Func>(func), 
-			                           std::forward<Args>(args)...)) {
-		impl_->setShared(impl_);
-	}
+    /**
+     * Construts a StealWork
+     *
+     * @param work_queue the work queue to have works stole
+     * @param func the callable (e.g. function, lambda expression, bind expression, functor)
+     * @param args the arguments to be forwarded to the callable
+     */
+    template<typename Func>
+    StealerWork(util::SafeQueue<Work>& work_queue, Func&& func, Args... args)
+        : impl_(std::make_shared<Impl>(work_queue,
+                                       std::forward<Func>(func),
+                                       std::forward<Args>(args)...)) {
+        impl_->setShared(impl_);
+    }
 
-	/**
-	 * Returns a std::future associated with wrapped callable
-	 */
-	std::future<Ret> getFuture() {
-		return impl_->getFuture();
-	}
+    /**
+     * Returns a std::future associated with wrapped callable
+     */
+    std::future<Ret> getFuture() {
+        return impl_->getFuture();
+    }
 
-	/**
-	 * Invokes the callable with its arguments, and stores its
-	 * result in the associated std::future objects.
-	 */
-	void operator()() {
-		(*impl_)();
-	}
+    /**
+     * Invokes the callable with its arguments, and stores its
+     * result in the associated std::future objects.
+     */
+    void operator()() {
+        (*impl_)();
+    }
 
 private:
 
-	struct Impl {
-		
-		template<typename Func>
-		Impl(util::SafeQueue<Work>& work_queue, Func&& func, Args... args)
-			: completed_(false), task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...), task_future_(task_.get_future()), work_queue_(work_queue), shared_impl_(nullptr) {}
+    struct Impl {
 
-		std::future<Ret> getFuture() {
-			return std::async(std::launch::deferred, &Impl::lazy, this, *shared_impl_);
-		}
+        template<typename Func>
+        Impl(util::SafeQueue<Work>& work_queue, Func&& func, Args... args)
+            : completed_(false), task_(std::forward<Func>(func)), args_(std::forward<Args>(args)...), task_future_(task_.get_future()), work_queue_(work_queue), shared_impl_(nullptr) {}
 
-		void setShared(std::shared_ptr<Impl>& impl) {
-			shared_impl_ = &impl;
-		}
+        std::future<Ret> getFuture() {
+            return std::async(std::launch::deferred, &Impl::lazy, this, *shared_impl_);
+        }
 
-		void operator()() {
-			std::apply(task_, args_);
-			completed_ = true;
-		}
+        void setShared(std::shared_ptr<Impl>& impl) {
+            shared_impl_ = &impl;
+        }
 
-		Ret lazy(std::shared_ptr<Impl> impl) {
-			while (!completed_) {
-				auto stoled = work_queue_.poll();
-				if (stoled)
-					(*stoled)();
-			}
+        void operator()() {
+            std::apply(task_, args_);
+            completed_ = true;
+        }
 
-			return task_future_.get();
-		}
+        Ret lazy(std::shared_ptr<Impl> impl) {
+            while (!completed_) {
+                auto stoled = work_queue_.poll();
+                if (stoled)
+                    (*stoled)();
+            }
 
-		std::atomic<bool> completed_;
-		std::packaged_task<Ret(Args...)> task_;
-		std::tuple<Args...> args_;
-		std::future<Ret> task_future_;
-		util::SafeQueue<Work>& work_queue_;
-		std::shared_ptr<Impl> *shared_impl_;
-	};
+            return task_future_.get();
+        }
 
-	std::shared_ptr<Impl> impl_;
+        std::atomic<bool> completed_;
+        std::packaged_task<Ret(Args...)> task_;
+        std::tuple<Args...> args_;
+        std::future<Ret> task_future_;
+        util::SafeQueue<Work>& work_queue_;
+        std::shared_ptr<Impl> *shared_impl_;
+    };
+
+    std::shared_ptr<Impl> impl_;
 };
 
 } // namespace work

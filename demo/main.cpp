@@ -43,14 +43,14 @@ void benchmark(Func& func) {
     }
 
     double mean = 0.0, std = 0.0;
-    
+
     for (uint32_t t : times)
         mean += t;
     mean /= tests;
 
     for (uint32_t t : times)
         std += (t - mean) * (t - mean);
-    
+
     std /= tests - 1;
     std = sqrt(std);
 
@@ -84,21 +84,21 @@ int main() {
     constexpr std::size_t POOL_SIZE = 12;
     constexpr std::size_t TASKS = static_cast<int>(100);
 
-    // auto pool = tpool::makeFixedPool(POOL_SIZE);
-    auto pool = tpool::makeWorkStealingPool(POOL_SIZE);
+    auto pool = tpool::makeFixedPool(POOL_SIZE);
+    // auto pool = tpool::makeWorkStealingPool(POOL_SIZE);
     // auto& pool = std::async;
     double sum = 0.0;
-    
-    auto sqrt_task = [] (double n) {
-        return std::sqrt(n);
-    };
+
+    // auto sqrt_task = [] (double n) {
+    //     return std::sqrt(n);
+    // };
 
     auto task = [&] {
         std::vector<std::future<int>> results;
 
-        for (int i = 0; i < TASKS; i++)
-            // results.push_back(std::async(knap, 0, 1000));
-            results.push_back(pool(knap, 0, 1000));
+        for (std::size_t i = 0; i < TASKS; i++)
+            results.push_back(std::async(knap, 0, 1000));
+            // results.push_back(pool(knap, 0, 1000));
 
         for (auto& r : results)
             sum += r.get();
@@ -109,9 +109,9 @@ int main() {
         peso[i] = i;
     }
 
-    auto some_task = [] {
-        knap(0, 10000);
-    };
+    // auto some_task = [] {
+    //     knap(0, 10000);
+    // };
 
     benchmark(task);
 

@@ -70,7 +70,7 @@ void Manager::awaitAllStop() {
     if (state_ != Manager::State::REFUSING)
         throw "Request stop before awaiting";
 
-    lock.unlock(); 
+    lock.unlock();
     // the state prevents anyone to modify workers_, therefore it's safe to access it
     for (auto& worker : workers_) {
         worker->awaitStop();

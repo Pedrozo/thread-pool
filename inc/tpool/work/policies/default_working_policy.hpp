@@ -23,73 +23,73 @@ namespace policies {
 class DefaultWorkingPolicy {
 public:
 
-	/**
-	 * Constructs a working policy with the given limit for workers.
-	 */
-	explicit DefaultWorkingPolicy(std::size_t max_size)
-		: max_size_(max_size), work_queue_(std::make_unique<util::SafeQueue<work::Work>>()),
-		stop_counter_(0, 0, static_cast<int>(1e6)), workers_(), mtx_() {}
+    /**
+     * Constructs a working policy with the given limit for workers.
+     */
+    explicit DefaultWorkingPolicy(std::size_t max_size)
+        : max_size_(max_size), work_queue_(std::make_unique<util::SafeQueue<work::Work>>()),
+        stop_counter_(0, 0, static_cast<int>(1e6)), workers_(), mtx_() {}
 
-	DefaultWorkingPolicy(const DefaultWorkingPolicy&) = delete;
+    DefaultWorkingPolicy(const DefaultWorkingPolicy&) = delete;
 
-	DefaultWorkingPolicy(DefaultWorkingPolicy&& other) noexcept
-		: max_size_(other.max_size_), work_queue_(std::move(other.work_queue_)),
-		stop_counter_(0, 0, static_cast<int>(1e6)), workers_(std::move(workers_)), mtx_() {}
+    DefaultWorkingPolicy(DefaultWorkingPolicy&& other) noexcept
+        : max_size_(other.max_size_), work_queue_(std::move(other.work_queue_)),
+        stop_counter_(0, 0, static_cast<int>(1e6)), workers_(std::move(other.workers_)), mtx_() {}
 
-	DefaultWorkingPolicy& operator=(const DefaultWorkingPolicy&) = delete;
+    DefaultWorkingPolicy& operator=(const DefaultWorkingPolicy&) = delete;
 
-	DefaultWorkingPolicy& operator=(DefaultWorkingPolicy&& other) noexcept {
-		using std::swap;
+    DefaultWorkingPolicy& operator=(DefaultWorkingPolicy&& other) noexcept {
+        using std::swap;
 
-		std::unique_lock<std::mutex> lock(mtx_);
+        std::unique_lock<std::mutex> lock(mtx_);
 
-		swap(max_size_, other.max_size_);
-		swap(work_queue_, other.work_queue_);
-		swap(workers_, other.workers_);
+        swap(max_size_, other.max_size_);
+        swap(work_queue_, other.work_queue_);
+        swap(workers_, other.workers_);
 
-		return *this;
-	}
+        return *this;
+    }
 
-	/**
-	 * Returns the internal work queue.
-	 */
-	const util::SafeQueue<work::Work>& work_queue() const {
-		return *work_queue_;
-	}
+    /**
+     * Returns the internal work queue.
+     */
+    const util::SafeQueue<work::Work>& work_queue() const {
+        return *work_queue_;
+    }
 
-	/**
-	 * Returns the internal work queue.
-	 */
-	util::SafeQueue<work::Work>& work_queue() {
-		return *work_queue_;
-	}
+    /**
+     * Returns the internal work queue.
+     */
+    util::SafeQueue<work::Work>& work_queue() {
+        return *work_queue_;
+    }
 
-	/**
-	 * Adds a work into the work queue to be done by one of the workers. A new worker is created if all workers
-	 * are busy and the limit amount of workers has not been reached.
-	 */
-	void submit(work::Work work) {
-		work_queue_->offer(std::move(work));
-		std::unique_lock<std::mutex> lock(mtx_);
+    /**
+     * Adds a work into the work queue to be done by one of the workers. A new worker is created if all workers
+     * are busy and the limit amount of workers has not been reached.
+     */
+    void submit(work::Work work) {
+        work_queue_->offer(std::move(work));
+        std::unique_lock<std::mutex> lock(mtx_);
 
-		if (workers_.size() < max_size_) {
-			auto worker = std::make_unique<worker::Worker>(static_cast<unsigned int>(workers_.size()), *work_queue_, stop_counter_);
-			worker->start();
+        if (workers_.size() < max_size_) {
+            auto worker = std::make_unique<worker::Worker>(static_cast<unsigned int>(workers_.size()), *work_queue_, stop_counter_);
+            worker->start();
 
-			workers_.push_back(std::move(worker));
-		}
+            workers_.push_back(std::move(worker));
+        }
 
-		for (auto& worker : workers_)
-			if (worker->notify())
-				break;
-	}
+        for (auto& worker : workers_)
+            if (worker->notify())
+                break;
+    }
 
 private:
-	std::size_t max_size_;
-	std::unique_ptr<util::SafeQueue<work::Work>> work_queue_;
-	util::BoundedCounter<int> stop_counter_;
-	std::list<std::unique_ptr<worker::Worker>> workers_;
-	mutable std::mutex mtx_;
+    std::size_t max_size_;
+    std::unique_ptr<util::SafeQueue<work::Work>> work_queue_;
+    util::BoundedCounter<int> stop_counter_;
+    std::list<std::unique_ptr<worker::Worker>> workers_;
+    mutable std::mutex mtx_;
 };
 
 } // namespace policies

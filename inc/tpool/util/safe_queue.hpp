@@ -37,7 +37,7 @@ public:
 
     /**
      * Returns the queue size.
-     * 
+     *
      * @return the queue size
      */
     std::size_t size() const {
@@ -47,7 +47,7 @@ public:
 
     /**
      * Inserts an element at the end of the queue.
-     * 
+     *
      * @param elem the element to be inserted
      */
     void offer(T elem) {
@@ -66,7 +66,7 @@ public:
 
         if (elem)
             queue_.pop();
-        
+
         return elem;
     }
 
@@ -77,7 +77,7 @@ private:
     std::optional<T> next() {
         if (queue_.empty())
             return std::nullopt;
-        
+
         T elem = std::move(queue_.front());
 
         return std::optional<T>(std::move(elem));

@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 #include <list>
+#include <type_traits>
 
 #include "work/work.hpp"
 #include "worker/worker.hpp"
@@ -18,33 +19,33 @@ namespace tpool {
 /**
  * A Thread Pool with policy based design. The policies are:
  *   - WorkFactory: Creates a work from a callable and its arguments.
- *   - WorkingPolicy: The works are submitted to a working policy that will 
+ *   - WorkingPolicy: The works are submitted to a working policy that will
  *     execute the work usually in a different thread
  */
 template<typename WorkFactory, typename WorkingPolicy = work::policies::DefaultWorkingPolicy>
 class Pool {
 public:
 
-	/**
-	 * Construct a thread pool with the given work factory policy and working policy
-	 * 
-	 * @param work_factory the work factory policy, which defines the type of the works created
-	 * @param working_policy the strategy of submitting works to the pool
-	 */
-	explicit Pool(WorkFactory work_factory = WorkFactory(), WorkingPolicy working_policy = WorkingPolicy())
-		: work_factory_(std::move(work_factory)), working_policy_(std::move(working_policy)) {}
+    /**
+     * Construct a thread pool with the given work factory policy and working policy
+     *
+     * @param work_factory the work factory policy, which defines the type of the works created
+     * @param working_policy the strategy of submitting works to the pool
+     */
+    explicit Pool(WorkFactory work_factory = WorkFactory(), WorkingPolicy working_policy = WorkingPolicy())
+        : work_factory_(std::move(work_factory)), working_policy_(std::move(working_policy)) {}
 
-	template<typename Func, typename... Args, typename Ret = std::invoke_result_t<Func&&, Args...>>
-	std::future<Ret> operator()(Func&& func, Args... args) {
-		auto future_work = work_factory_.makeWork(std::forward<Func>(func), std::forward<Args>(args)...);
-		auto future = future_work.getFuture();
-		working_policy_.submit(std::move(future_work));
-		return future;
-	}
+    template<typename Func, typename... Args, typename Ret = std::invoke_result_t<Func&&, Args...>>
+    std::future<Ret> operator()(Func&& func, Args... args) {
+        auto future_work = work_factory_.makeWork(std::forward<Func>(func), std::forward<Args>(args)...);
+        auto future = future_work.getFuture();
+        working_policy_.submit(std::move(future_work));
+        return future;
+    }
 
 private:
-	WorkFactory work_factory_;
-	WorkingPolicy working_policy_;
+    WorkFactory work_factory_;
+    WorkingPolicy working_policy_;
 };
 
 /**
@@ -62,25 +63,25 @@ using WorkStealingPool = Pool<work::factories::StealerWorkFactory>;
 
 /**
  * Creates a thread pool with the given number of threads.
- * 
+ *
  * @param size the number of threads
  * @return a FixedPool
  */
 inline FixedPool makeFixedPool(std::size_t size) {
-	return FixedPool(work::factories::FutureWorkFactory(),
-		work::policies::DefaultWorkingPolicy(size));
+    return FixedPool(work::factories::FutureWorkFactory(),
+        work::policies::DefaultWorkingPolicy(size));
 }
 
 /**
  * Creates a work-stealing thread pool with the given number of threads.
- * 
+ *
  * @param size the number of threads
  * @return a WorkStealingPool
  */
 inline WorkStealingPool makeWorkStealingPool(std::size_t size) {
-	work::policies::DefaultWorkingPolicy working_policy(size);
-	work::factories::StealerWorkFactory work_factory(working_policy.work_queue());
-	return WorkStealingPool(std::move(work_factory), std::move(working_policy));
+    work::policies::DefaultWorkingPolicy working_policy(size);
+    work::factories::StealerWorkFactory work_factory(working_policy.work_queue());
+    return WorkStealingPool(std::move(work_factory), std::move(working_policy));
 }
 
 

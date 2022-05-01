@@ -35,7 +35,7 @@ public:
     /**
      * Constructs a worker with the given id. It will pull works from the given work queue.
      * Call start() after constructing the worker to start pulling works.
-     * 
+     *
      * @param id this worker id
      * @param shared_queue the work queue that is going to have its works pulled and executed by this worker
      * @param stop_counter a counter used to shutdown workers
@@ -59,7 +59,7 @@ public:
 
     /**
      * Request this worker to execute the given work.
-     * 
+     *
      * @param work the work to be performed
      * @throws std::string if the worker is already busy with another work
      */
@@ -67,7 +67,7 @@ public:
 
     /**
      * Starts the worker so it can pull works from the shared work queue.
-     * 
+     *
      * @throws std::string if the worker is already started
      */
     void start();
@@ -75,7 +75,7 @@ public:
     /**
      * Requests the worker to stop. If it is doing some work at the moment,
      * it will finish the work before shutting down.
-     * 
+     *
      * @throws std::string if the worker is already stopped
      */
     void stop();
@@ -88,7 +88,7 @@ public:
 
     /**
      * Notifies this worker to check if a new work (from a shared work queue, or directly by doWork()) is available to be performed.
-     * 
+     *
      * @retun true if the notification has changed the worker state from WAITING to NOTIFIED
      */
     bool notify();

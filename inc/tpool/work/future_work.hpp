@@ -22,7 +22,7 @@ public:
 
     /**
      * Constructs a FutureWork.
-     * 
+     *
      * @param func the callable (e.g. function, lambda expression, bind expression, functor)
      * @param args the arguments to be forwarded to the callable
      */
@@ -46,7 +46,7 @@ public:
     }
 
     /**
-     * Invokes the callable with its arguments, and stores its 
+     * Invokes the callable with its arguments, and stores its
      * result in the associated std::future objects.
      */
     void operator()() {

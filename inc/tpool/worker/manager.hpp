@@ -14,23 +14,23 @@ namespace worker {
 
 template<typename WorkerFactory, typename DelegationPolicy>
 class Manager : private WorkerFactory, DelegationPolicy {
-	// using WorkQueue = util::SafeQueue<work::Work>;
-	// using StopCounter = util::BoundedCounter<int>;
+    // using WorkQueue = util::SafeQueue<work::Work>;
+    // using StopCounter = util::BoundedCounter<int>;
 
 public:
-	Manager(std::size_t initial_worker_count)
-		: work_queue_(), stop_counter_(0, 0, static_cast<int>(1e6)), workers_() {}
+    Manager(std::size_t initial_worker_count)
+        : work_queue_(), stop_counter_(0, 0, static_cast<int>(1e6)), workers_() {}
 
-	void submit(work::Work work) {
-		// delegation_policy_(std::move(work));
-	}
+    void submit(work::Work work) {
+        // delegation_policy_(std::move(work));
+    }
 
 private:
-	WorkQueue work_queue_;
-	StopCounter stop_counter_;
-	std::list<Worker> workers_;
-	// WorkerFactory worker_factory_;
-	// DelegationPolicy delegation_policy_;
+    WorkQueue work_queue_;
+    StopCounter stop_counter_;
+    std::list<Worker> workers_;
+    // WorkerFactory worker_factory_;
+    // DelegationPolicy delegation_policy_;
 };
 
 } // namespace worker
